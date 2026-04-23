@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#6366f1" />
+  <link rel="icon" href="icons/icon-192x192-A.png" type="image/png" />
+  <link rel="manifest" href="manifest.json">
+  <title>Monbell - Keuangan Mahasiswa</title>
+  <style>
+    /* ===== RESET & ROOT ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --primary-light: #818cf8;
+      --bg: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card2: #263347;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --info: #38bdf8;
+      --border: rgba(99,102,241,0.18);
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      background: linear-gradient(135deg, #1a1f3a 0%, #1e2a4a 100%);
+      padding: 16px 20px;
+      position: sticky; top: 0; z-index: 100;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .header-inner {
+      max-width: 520px; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+    }
+    .logo h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+    .logo span { color: var(--primary-light); }
+    .header-actions { display: flex; gap: 8px; }
+    .btn-header {
+      background: rgba(99,102,241,0.15);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 14px; border-radius: 10px;
+      cursor: pointer; font-size: 13px; font-weight: 600;
+      transition: all .2s;
+    }
+    .btn-header:hover { background: rgba(99,102,241,0.3); }
+    .offline-badge {
+      background: var(--warning); color: #000;
+      font-size: 11px; padding: 3px 8px; border-radius: 20px;
+      font-weight: 700; display: none;
+    }
+
+    /* ===== CONTAINER ===== */
+    .container { max-width: 520px; margin: 0 auto; padding: 20px 16px; }
+
+    /* ===== PAGES ===== */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ===== CARDS ===== */
+    .card {
+      background: var(--bg-card);
+      border-radius: 16px; padding: 20px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px;
+    }
+
+    /* ===== SALDO CARD ===== */
+    .saldo-card {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-light) 100%);
+      border-radius: 20px; padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 32px rgba(99,102,241,0.35);
+      position: relative; overflow: hidden;
+    }
+    .saldo-card::before {
+      content: ''; position: absolute;
+      top: -30px; right: -30px;
+      width: 150px; height: 150px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+    }
+    .saldo-label { font-size: 13px; color: rgba(255,255,255,0.75); margin-bottom: 6px; }
+    .saldo-amount { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
+    .saldo-sub { display: flex; gap: 16px; margin-top: 16px; }
+    .saldo-sub-item { flex: 1; }
+    .saldo-sub-label { font-size: 11px; color: rgba(255,255,255,0.65); margin-bottom: 3px; }
+    .saldo-sub-value { font-size: 16px; font-weight: 700; }
+    .saldo-sub-value.income { color: #86efac; }
+    .saldo-sub-value.expense { color: #fca5a5; }
+
+    /* ===== BUDGET PROGRESS ===== */
+    .budget-item { margin-bottom: 14px; }
+    .budget-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .budget-name { font-size: 14px; font-weight: 600; }
+    .budget-info { font-size: 12px; color: var(--text-muted); }
+    .progress-bar { background: rgba(255,255,255,0.08); height: 8px; border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 4px; transition: width .5s ease; }
+    .progress-fill.ok { background: linear-gradient(90deg, var(--success), #4ade80); }
+    .progress-fill.warn { background: linear-gradient(90deg, var(--warning), #fbbf24); }
+    .progress-fill.over { background: linear-gradient(90deg, var(--danger), #f87171); }
+
+    /* ===== QUICK STATS ===== */
+    .quick-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .stat-card {
+      background: var(--bg-card);
+      border-radius: 14px; padding: 16px;
+      border: 1px solid var(--border);
+    }
+    .stat-icon { font-size: 24px; margin-bottom: 8px; }
+    .stat-val { font-size: 18px; font-weight: 800; }
+    .stat-lbl { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ===== RECENT TRANSACTIONS ===== */
+    .trx-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .trx-item:last-child { border-bottom: none; }
+    .trx-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .trx-info { flex: 1; }
+    .trx-name { font-size: 14px; font-weight: 600; }
+    .trx-cat { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .trx-amount { font-size: 15px; font-weight: 700; }
+    .trx-amount.pengeluaran { color: #fca5a5; }
+    .trx-amount.pemasukan { color: #86efac; }
+
+    /* ===== FORM ===== */
+    .form-group { margin-bottom: 14px; }
+    label { font-size: 12px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px; }
+    input, select, textarea {
+      width: 100%; padding: 13px 16px;
+      background: var(--bg);
+      border: 2px solid rgba(99,102,241,0.2);
+      border-radius: 12px;
+      color: var(--text); font-size: 15px;
+      transition: border-color .2s;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+    }
+    select option { background: var(--bg-card); }
+    textarea { resize: vertical; min-height: 80px; }
+
+    /* ===== TYPE SELECTOR ===== */
+    .type-selector { display: flex; gap: 8px; margin-bottom: 14px; }
+    .type-btn {
+      flex: 1; padding: 12px;
+      background: transparent;
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 12px; cursor: pointer;
+      color: var(--text-muted); font-size: 14px; font-weight: 600;
+      transition: all .2s;
+    }
+    .type-btn.pengeluaran.active { border-color: var(--danger); background: rgba(239,68,68,.12); color: #fca5a5; }
+    .type-btn.pemasukan.active { border-color: var(--success); background: rgba(34,197,94,.12); color: #86efac; }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 14px 20px; border: none; border-radius: 12px;
+      font-size: 15px; font-weight: 700; cursor: pointer; transition: all .2s;
+      width: 100%;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      box-shadow: 0 4px 16px rgba(99,102,241,0.35);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.45); }
+    .btn-danger { background: rgba(239,68,68,.15); color: var(--danger); border: 1px solid rgba(239,68,68,.3); }
+    .btn-danger:hover { background: var(--danger); color: white; }
+    .btn-success { background: rgba(34,197,94,.15); color: var(--success); border: 1px solid rgba(34,197,94,.3); }
+    .btn-success:hover { background: var(--success); color: white; }
+
+    /* ===== TABS NAV ===== */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+      background: #111827;
+      border-top: 1px solid var(--border);
+      display: flex; padding: 8px 0;
+      padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    }
+    .nav-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      gap: 4px; padding: 6px 4px; cursor: pointer;
+      color: var(--text-muted); font-size: 10px; font-weight: 600;
+      transition: color .2s; border: none; background: none;
+    }
+    .nav-item.active { color: var(--primary-light); }
+    .nav-icon { font-size: 22px; }
+    .nav-item .nav-icon { transition: transform .2s; }
+    .nav-item.active .nav-icon { transform: scale(1.15); }
+
+    /* ===== FAB ===== */
+    .fab {
+      position: fixed; bottom: 80px; right: 20px; z-index: 150;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border: none; color: white; font-size: 26px;
+      cursor: pointer; box-shadow: 0 6px 20px rgba(99,102,241,0.45);
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .fab:hover { transform: scale(1.1) rotate(90deg); }
+
+    /* ===== SAVINGS GOAL ===== */
+    .goal-card {
+      background: var(--bg-card2);
+      border-radius: 14px; padding: 16px;
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+    .goal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .goal-name { font-size: 15px; font-weight: 700; }
+    .goal-pct { font-size: 18px; font-weight: 800; color: var(--primary-light); }
+    .goal-amounts { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+
+    /* ===== LAPORAN CHART ===== */
+    .chart-container { position: relative; width: 100%; }
+    .bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 120px; margin: 12px 0 4px; }
+    .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+    .bar {
+      width: 100%; border-radius: 6px 6px 0 0;
+      background: linear-gradient(180deg, var(--primary-light), var(--primary-dark));
+      min-height: 4px; transition: height .5s ease;
+    }
+    .bar.income { background: linear-gradient(180deg, #4ade80, #16a34a); }
+    .bar-label { font-size: 9px; color: var(--text-muted); text-align: center; }
+
+    /* ===== TIPS CARD ===== */
+    .tip-card {
+      background: linear-gradient(135deg, rgba(99,102,241,.15), rgba(129,140,248,.08));
+      border: 1px solid rgba(99,102,241,.3);
+      border-radius: 14px; padding: 16px;
+      display: flex; gap: 12px; align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .tip-icon { font-size: 28px; flex-shrink: 0; }
+    .tip-text { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+    .tip-text strong { color: var(--text); }
+
+    /* ===== REMINDER ===== */
+    .reminder-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .reminder-item:last-child { border-bottom: none; }
+    .reminder-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .reminder-dot.urgent { background: var(--danger); box-shadow: 0 0 8px rgba(239,68,68,.5); }
+    .reminder-dot.soon { background: var(--warning); }
+    .reminder-dot.ok { background: var(--success); }
+    .reminder-info { flex: 1; }
+    .reminder-name { font-size: 14px; font-weight: 600; }
+    .reminder-due { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .reminder-amt { font-size: 14px; font-weight: 700; color: var(--text-muted); }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+      display: none; align-items: flex-end; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--bg-card);
+      border-radius: 24px 24px 0 0;
+      padding: 24px 20px 32px;
+      width: 100%; max-width: 520px;
+      animation: slideUp .3s ease;
+      max-height: 90vh; overflow-y: auto;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .modal-handle {
+      width: 40px; height: 4px;
+      background: rgba(255,255,255,0.15); border-radius: 2px;
+      margin: 0 auto 20px;
+    }
+    .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 20px; }
+
+    /* ===== CATEGORY CHIPS ===== */
+    .cat-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .cat-chip {
+      padding: 7px 14px; border-radius: 20px;
+      background: rgba(255,255,255,0.06);
+      border: 1.5px solid rgba(255,255,255,0.1);
+      cursor: pointer; font-size: 13px; font-weight: 600;
+      color: var(--text-muted); transition: all .2s;
+    }
+    .cat-chip.active {
+      background: rgba(99,102,241,0.2);
+      border-color: var(--primary);
+      color: var(--primary-light);
+    }
+
+    /* ===== TOAST ===== */
+    .toast {
+      position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+      background: var(--bg-card); border: 1px solid var(--border);
+      padding: 12px 20px; border-radius: 12px;
+      font-size: 14px; font-weight: 600;
+      z-index: 999; display: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      animation: fadeSlide .3s ease;
+    }
+    .toast.show { display: block; }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    /* ===== ONBOARDING ===== */
+    .onboard-overlay {
+      position: fixed; inset: 0; z-index: 800;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .onboard-box { max-width: 400px; width: 100%; text-align: center; }
+    .onboard-emoji { font-size: 64px; margin-bottom: 20px; }
+    .onboard-title { font-size: 26px; font-weight: 800; margin-bottom: 10px; }
+    .onboard-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 32px; line-height: 1.6; }
+    .onboard-step { display: none; }
+    .onboard-step.active { display: block; }
+
+    /* ===== EMPTY STATE ===== */
+    .empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: .5; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 400px) {
+      .saldo-amount { font-size: 26px; }
+      .quick-stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div class="onboard-overlay" id="onboardOverlay">
+  <div class="onboard-box">
+    <div class="onboard-step active" id="step1">
+      <div class="onboard-emoji">💰</div>
+      <div class="onboard-title">Selamat datang di <span style="color:var(--primary-light)">Monbell</span></div>
+      <div class="onboard-sub">Aplikasi pencatatan keuangan khusus mahasiswa. Kelola uang sakumu dengan cerdas!</div>
+      <button class="btn btn-primary" onclick="nextStep(2)">Mulai Setup →</button>
+    </div>
+    <div class="onboard-step" id="step2">
+      <div class="onboard-emoji">💳</div>
+      <div class="onboard-title">Saldo Awal</div>
+      <div class="onboard-sub">Masukkan saldo atau uang saku yang kamu punya sekarang.</div>
+      <div class="form-group">
+        <label>Saldo Awal (Rp)</label>
+        <input type="number" id="inputSaldoAwal" placeholder="Contoh: 500000" min="0">
+      </div>
+      <button class="btn btn-primary" onclick="nextStep(3)">Lanjut →</button>
+    </div>
+    <div class="onboard-step" id="step3">
+      <div class="onboard-emoji">📊</div>
+      <div class="onboard-title">Anggaran Bulanan</div>
+      <div class="onboard-sub">Tentukan batas pengeluaran bulanan agar keuanganmu tetap terkontrol.</div>
+      <div class="form-group">
+        <label>Budget Bulanan (Rp)</label>
+        <input type="number" id="inputBudget" placeholder="Contoh: 1500000" min="0">
+      </div>
+      <button class="btn btn-primary" onclick="finishOnboard()">Selesai & Mulai 🚀</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">🔔</div>
+      <h1>Mon<span>bell</span></h1>
+    </div>
+    <div class="header-actions">
+      <span class="offline-badge" id="offlineBadge">📵 Offline</span>
+      <button class="btn-header" onclick="showModal('resetModal')">⚙️ Reset</button>
+    </div>
+  </div>
+</header>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- FAB -->
+<button class="fab" onclick="showModal('trxModal')" title="Tambah Transaksi">＋</button>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+
+  <!-- PAGE: DASHBOARD -->
+  <div class="page active" id="pageDashboard">
+
+    <!-- Saldo Card -->
+    <div class="saldo-card">
+      <div class="saldo-label">💳 Saldo Tersedia</div>
+      <div class="saldo-amount" id="saldoAmount">Rp 0</div>
+      <div class="saldo-sub">
+        <div class="saldo-sub-item">
+          <div class="saldo-sub-label">⬆ Pemasukan</div>
+          <div class="saldo-sub-value income" id="totalIncome">Rp 0</div>
+        </div>
+        <div class="saldo-sub-item">
+          <div class="saldo-sub-label">⬇ Pengeluaran</div>
+          <div class="saldo-sub-value expense" id="totalExpense">Rp 0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="quick-stats">
+      <div class="stat-card">
+        <div class="stat-icon">📝</div>
+        <div class="stat-val" id="statTrx">0</div>
+        <div class="stat-lbl">Transaksi Bulan Ini</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-val" id="statBudgetPct">0%</div>
+        <div class="stat-lbl">Anggaran Terpakai</div>
+      </div>
+    </div>
+
+    <!-- Tips AI -->
+    <div class="tip-card" id="tipCard">
+      <div class="tip-icon">💡</div>
+      <div class="tip-text" id="tipText"><strong>Selamat datang!</strong> Mulai catat transaksimu untuk mendapatkan tips keuangan personal.</div>
+    </div>
+
+    <!-- Budget Progress -->
+    <div class="card">
+      <div class="card-title">📊 Progress Anggaran Bulanan</div>
+      <div id="budgetProgress">
+        <div class="budget-item">
+          <div class="budget-row">
+            <span class="budget-name">Total Pengeluaran</span>
+            <span class="budget-info" id="budgetInfoText">Rp 0 / Rp 0</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill ok" id="budgetBar" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:12px;font-size:13px;padding:10px;" onclick="showModal('budgetModal')">+ Atur Budget Kategori</button>
+    </div>
+
+    <!-- Reminder -->
+    <div class="card">
+      <div class="card-title">🔔 Tagihan Mendatang</div>
+      <div id="reminderList">
+        <div class="empty"><div class="empty-icon">🔕</div>Belum ada tagihan<br><small>Tambah di menu Reminder</small></div>
+      </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="card">
+      <div class="card-title">🕒 Transaksi Terkini</div>
+      <div id="recentTrxList">
+        <div class="empty"><div class="empty-icon">📭</div>Belum ada transaksi</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: TRANSAKSI -->
+  <div class="page" id="pageTranasksi">
+    <div class="card">
+      <div class="card-title">📋 Riwayat Transaksi</div>
+      <!-- Filter -->
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+        <button class="cat-chip active" onclick="filterTrx('semua',this)">Semua</button>
+        <button class="cat-chip" onclick="filterTrx('pemasukan',this)">⬆ Pemasukan</button>
+        <button class="cat-chip" onclick="filterTrx('pengeluaran',this)">⬇ Pengeluaran</button>
+      </div>
+      <div id="allTrxList">
+        <div class="empty"><div class="empty-icon">📭</div>Belum ada transaksi</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: LAPORAN -->
+  <div class="page" id="pageLaporan">
+    <div class="card">
+      <div class="card-title">📈 Ringkasan Pengeluaran per Kategori</div>
+      <div id="categoryChart"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📅 Pengeluaran 7 Hari Terakhir</div>
+      <div class="bar-chart" id="weeklyChart"></div>
+      <div style="display:flex;gap:16px;font-size:11px;color:var(--text-muted);">
+        <span>▪ <span style="color:var(--primary-light)">Pengeluaran</span></span>
+        <span>▪ <span style="color:#4ade80">Pemasukan</span></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">💾 Export Data</div>
+      <button class="btn btn-success" onclick="exportCSV()">📥 Export ke CSV</button>
+    </div>
+  </div>
+
+  <!-- PAGE: TABUNGAN -->
+  <div class="page" id="pageTabungan">
+    <div class="card">
+      <div class="card-title">🎯 Target Tabungan</div>
+      <div id="goalsList">
+        <div class="empty"><div class="empty-icon">🏦</div>Belum ada target tabungan</div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:12px" onclick="showModal('goalModal')">+ Tambah Target</button>
+    </div>
+  </div>
+
+  <!-- PAGE: REMINDER -->
+  <div class="page" id="pageReminder">
+    <div class="card">
+      <div class="card-title">🔔 Pengingat Tagihan</div>
+      <div id="reminderListFull">
+        <div class="empty"><div class="empty-icon">🔕</div>Belum ada tagihan</div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:12px" onclick="showModal('reminderModal')">+ Tambah Tagihan</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="goPage('pageDashboard',this)">
+    <span class="nav-icon">🏠</span><span>Beranda</span>
+  </button>
+  <button class="nav-item" onclick="goPage('pageTranasksi',this)">
+    <span class="nav-icon">📝</span><span>Transaksi</span>
+  </button>
+  <button class="nav-item" onclick="goPage('pageLaporan',this)">
+    <span class="nav-icon">📊</span><span>Laporan</span>
+  </button>
+  <button class="nav-item" onclick="goPage('pageTabungan',this)">
+    <span class="nav-icon">🎯</span><span>Tabungan</span>
+  </button>
+  <button class="nav-item" onclick="goPage('pageReminder',this)">
+    <span class="nav-icon">🔔</span><span>Reminder</span>
+  </button>
+</nav>
+
+<!-- ===== MODALS ===== -->
+
+<!-- MODAL TRANSAKSI -->
+<div class="modal-overlay" id="trxModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Catat Transaksi</div>
+    <div class="type-selector">
+      <button class="type-btn pengeluaran active" id="btnPengeluaran" onclick="setType('pengeluaran')">⬇ Pengeluaran</button>
+      <button class="type-btn pemasukan" id="btnPemasukan" onclick="setType('pemasukan')">⬆ Pemasukan</button>
+    </div>
+    <div class="form-group">
+      <label>Nominal (Rp)</label>
+      <input type="number" id="trxNominal" placeholder="Contoh: 25000" min="0">
+    </div>
+    <div class="form-group">
+      <label>Kategori</label>
+      <div class="cat-chips" id="catChips"></div>
+    </div>
+    <div class="form-group">
+      <label>Catatan (opsional)</label>
+      <input type="text" id="trxCatatan" placeholder="Deskripsi singkat...">
+    </div>
+    <div class="form-group">
+      <label>Tanggal</label>
+      <input type="date" id="trxTanggal">
+    </div>
+    <button class="btn btn-primary" onclick="simpanTrx()">💾 Simpan Transaksi</button>
+    <button class="btn" style="margin-top:8px;background:rgba(255,255,255,.05);color:var(--text-muted)" onclick="closeModal('trxModal')">Batal</button>
+  </div>
+</div>
+
+<!-- MODAL BUDGET -->
+<div class="modal-overlay" id="budgetModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Atur Budget Kategori</div>
+    <div id="budgetFormList"></div>
+    <button class="btn btn-primary" onclick="simpanBudget()">💾 Simpan Budget</button>
+    <button class="btn" style="margin-top:8px;background:rgba(255,255,255,.05);color:var(--text-muted)" onclick="closeModal('budgetModal')">Batal</button>
+  </div>
+</div>
+
+<!-- MODAL GOAL -->
+<div class="modal-overlay" id="goalModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Tambah Target Tabungan</div>
+    <div class="form-group">
+      <label>Nama Target</label>
+      <input type="text" id="goalNama" placeholder="Contoh: Beli Laptop, UKT, Liburan...">
+    </div>
+    <div class="form-group">
+      <label>Target (Rp)</label>
+      <input type="number" id="goalTarget" placeholder="Contoh: 5000000" min="0">
+    </div>
+    <div class="form-group">
+      <label>Sudah Terkumpul (Rp)</label>
+      <input type="number" id="goalTerkumpul" placeholder="0" min="0">
+    </div>
+    <button class="btn btn-primary" onclick="simpanGoal()">💾 Simpan Target</button>
+    <button class="btn" style="margin-top:8px;background:rgba(255,255,255,.05);color:var(--text-muted)" onclick="closeModal('goalModal')">Batal</button>
+  </div>
+</div>
+
+<!-- MODAL REMINDER -->
+<div class="modal-overlay" id="reminderModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Tambah Pengingat Tagihan</div>
+    <div class="form-group">
+      <label>Nama Tagihan</label>
+      <input type="text" id="remNama" placeholder="Contoh: Kos, Internet, UKT...">
+    </div>
+    <div class="form-group">
+      <label>Nominal (Rp)</label>
+      <input type="number" id="remNominal" placeholder="Contoh: 500000" min="0">
+    </div>
+    <div class="form-group">
+      <label>Tanggal Jatuh Tempo</label>
+      <input type="date" id="remTanggal">
+    </div>
+    <button class="btn btn-primary" onclick="simpanReminder()">💾 Simpan Reminder</button>
+    <button class="btn" style="margin-top:8px;background:rgba(255,255,255,.05);color:var(--text-muted)" onclick="closeModal('reminderModal')">Batal</button>
+  </div>
+</div>
+
+<!-- MODAL RESET -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">⚙️ Pengaturan</div>
+    <div class="form-group">
+      <label>Budget Bulanan (Rp)</label>
+      <input type="number" id="settingBudget" placeholder="Budget bulanan">
+    </div>
+    <button class="btn btn-primary" onclick="updateBudget()">💾 Update Budget</button>
+    <div style="margin-top:16px;border-top:1px solid rgba(255,255,255,.08);padding-top:16px;">
+      <button class="btn btn-danger" onclick="resetData()">🗑️ Reset Semua Data</button>
+    </div>
+    <button class="btn" style="margin-top:8px;background:rgba(255,255,255,.05);color:var(--text-muted)" onclick="closeModal('resetModal')">Tutup</button>
+  </div>
+</div>
+
+<script>
+// =============================================
+// DATA & STATE
+// =============================================
+const CATEGORIES_EXPENSE = ['🍜 Makan','🚌 Transportasi','📚 Kuliah','🏠 Kos','☕ Kopi','🎮 Hiburan','💊 Kesehatan','👕 Belanja','📱 Pulsa/Internet','💡 Lainnya'];
+const CATEGORIES_INCOME  = ['💵 Uang Saku','🎓 Beasiswa','💼 Kerja Sampingan','💰 Transfer','📦 Lainnya'];
+const CAT_COLORS = {'🍜 Makan':'#f59e0b','🚌 Transportasi':'#38bdf8','📚 Kuliah':'#818cf8','🏠 Kos':'#a78bfa','☕ Kopi':'#92400e','🎮 Hiburan':'#ec4899','💊 Kesehatan':'#34d399','👕 Belanja':'#f472b6','📱 Pulsa/Internet':'#60a5fa','💡 Lainnya':'#94a3b8'};
+
+let state = {
+  saldoAwal: 0,
+  budgetBulanan: 0,
+  transaksi: [],
+  goals: [],
+  reminders: [],
+  budgetKategori: {},
+  onboarded: false,
+  currentType: 'pengeluaran',
+  trxFilter: 'semua',
+  currentGoalEdit: null
+};
+
+function loadState() {
+  const saved = localStorage.getItem('monbell_v2');
+  if (saved) {
+    try { Object.assign(state, JSON.parse(saved)); } catch(e) {}
+  }
+}
+function saveState() {
+  localStorage.setItem('monbell_v2', JSON.stringify(state));
+}
+
+// =============================================
+// ONBOARDING
+// =============================================
+let onboardStep = 1;
+function nextStep(n) {
+  document.getElementById(`step${onboardStep}`).classList.remove('active');
+  onboardStep = n;
+  document.getElementById(`step${n}`).classList.add('active');
+}
+function finishOnboard() {
+  const saldo = parseFloat(document.getElementById('inputSaldoAwal').value) || 0;
+  const budget = parseFloat(document.getElementById('inputBudget').value) || 0;
+  state.saldoAwal = saldo;
+  state.budgetBulanan = budget;
+  state.onboarded = true;
+  saveState();
+  document.getElementById('onboardOverlay').style.display = 'none';
+  init();
+}
+
+// =============================================
+// INIT
+// =============================================
+function init() {
+  renderDashboard();
+  renderTrxList();
+  renderLaporan();
+  renderGoals();
+  renderReminders();
+  updateTips();
+  // Set today as default date
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('trxTanggal').value = today;
+  document.getElementById('remTanggal').value = today;
+  // Prefill settings
+  document.getElementById('settingBudget').value = state.budgetBulanan || '';
+}
+
+// =============================================
+// NAVIGATION
+// =============================================
+function goPage(pageId, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  btn.classList.add('active');
+  if (pageId === 'pageLaporan') renderLaporan();
+  if (pageId === 'pageTabungan') renderGoals();
+  if (pageId === 'pageReminder') renderReminders();
+  if (pageId === 'pageTranasksi') renderTrxList();
+}
+
+// =============================================
+// HELPERS
+// =============================================
+function rp(n) {
+  return 'Rp ' + Math.abs(n).toLocaleString('id-ID');
+}
+function getThisMonthTrx() {
+  const now = new Date();
+  return state.transaksi.filter(t => {
+    const d = new Date(t.tanggal);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+}
+function showToast(msg, duration=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// =============================================
+// MODAL
+// =============================================
+function showModal(id) {
+  if (id === 'trxModal') buildCatChips();
+  if (id === 'budgetModal') buildBudgetForm();
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+// Close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('open');
+  });
+});
+
+// =============================================
+// TRANSAKSI
+// =============================================
+let currentCat = null;
+
+function setType(type) {
+  state.currentType = type;
+  document.getElementById('btnPengeluaran').classList.toggle('active', type === 'pengeluaran');
+  document.getElementById('btnPemasukan').classList.toggle('active', type === 'pemasukan');
+  buildCatChips();
+}
+
+function buildCatChips() {
+  const cats = state.currentType === 'pengeluaran' ? CATEGORIES_EXPENSE : CATEGORIES_INCOME;
+  currentCat = cats[0];
+  document.getElementById('catChips').innerHTML = cats.map((c,i) =>
+    `<span class="cat-chip${i===0?' active':''}" onclick="selectCat(this,'${c}')">${c}</span>`
+  ).join('');
+}
+
+function selectCat(el, cat) {
+  document.querySelectorAll('#catChips .cat-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  currentCat = cat;
+}
+
+function simpanTrx() {
+  const nominal = parseFloat(document.getElementById('trxNominal').value);
+  const catatan = document.getElementById('trxCatatan').value.trim();
+  const tanggal = document.getElementById('trxTanggal').value;
+  if (!nominal || nominal <= 0) { showToast('⚠️ Masukkan nominal yang valid'); return; }
+  if (!tanggal) { showToast('⚠️ Masukkan tanggal'); return; }
+  const trx = {
+    id: Date.now(),
+    type: state.currentType,
+    nominal,
+    kategori: currentCat || (state.currentType === 'pengeluaran' ? CATEGORIES_EXPENSE[0] : CATEGORIES_INCOME[0]),
+    catatan,
+    tanggal,
+    offline: !navigator.onLine
+  };
+  state.transaksi.unshift(trx);
+  saveState();
+  closeModal('trxModal');
+  // Reset form
+  document.getElementById('trxNominal').value = '';
+  document.getElementById('trxCatatan').value = '';
+  showToast(trx.offline ? '📵 Tersimpan offline' : '✅ Transaksi tersimpan!');
+  init();
+}
+
+function hapusTrx(id) {
+  state.transaksi = state.transaksi.filter(t => t.id !== id);
+  saveState();
+  init();
+  showToast('🗑️ Transaksi dihapus');
+}
+
+function filterTrx(filter, btn) {
+  state.trxFilter = filter;
+  document.querySelectorAll('#pageTranasksi .cat-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  renderTrxList();
+}
+
+function renderTrxList() {
+  let list = [...state.transaksi];
+  if (state.trxFilter !== 'semua') list = list.filter(t => t.type === state.trxFilter);
+  const el = document.getElementById('allTrxList');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>Belum ada transaksi</div>';
+    return;
+  }
+  el.innerHTML = list.map(t => trxHTML(t, true)).join('');
+}
+
+function trxHTML(t, showDelete=false) {
+  const color = t.type === 'pengeluaran' ? '#fca5a5' : '#86efac';
+  const sign = t.type === 'pengeluaran' ? '-' : '+';
+  const bgColor = CAT_COLORS[t.kategori] || '#6366f1';
+  return `<div class="trx-item">
+    <div class="trx-icon" style="background:${bgColor}22">${t.kategori.split(' ')[0]}</div>
+    <div class="trx-info">
+      <div class="trx-name">${t.catatan || t.kategori}</div>
+      <div class="trx-cat">${t.kategori} · ${t.tanggal}${t.offline?' · 📵':''}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="trx-amount ${t.type}" style="color:${color}">${sign} ${rp(t.nominal)}</div>
+      ${showDelete ? `<button onclick="hapusTrx(${t.id})" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--danger)">🗑️</button>` : ''}
+    </div>
+  </div>`;
+}
+
+// =============================================
+// DASHBOARD
+// =============================================
+function renderDashboard() {
+  const allTrx = state.transaksi;
+  const monthTrx = getThisMonthTrx();
+  const totalIn = allTrx.filter(t=>t.type==='pemasukan').reduce((s,t)=>s+t.nominal,0);
+  const totalOut = allTrx.filter(t=>t.type==='pengeluaran').reduce((s,t)=>s+t.nominal,0);
+  const saldo = state.saldoAwal + totalIn - totalOut;
+  document.getElementById('saldoAmount').textContent = rp(saldo);
+  document.getElementById('totalIncome').textContent = rp(totalIn + state.saldoAwal);
+  document.getElementById('totalExpense').textContent = rp(totalOut);
+  // Quick stats
+  document.getElementById('statTrx').textContent = monthTrx.length;
+  const monthOut = monthTrx.filter(t=>t.type==='pengeluaran').reduce((s,t)=>s+t.nominal,0);
+  const pct = state.budgetBulanan > 0 ? Math.round((monthOut / state.budgetBulanan)*100) : 0;
+  document.getElementById('statBudgetPct').textContent = pct + '%';
+  // Budget bar
+  const fill = document.getElementById('budgetBar');
+  fill.style.width = Math.min(pct,100) + '%';
+  fill.className = 'progress-fill ' + (pct >= 100 ? 'over' : pct >= 75 ? 'warn' : 'ok');
+  document.getElementById('budgetInfoText').textContent = `${rp(monthOut)} / ${rp(state.budgetBulanan)}`;
+  // Recent 3 trx
+  const recent = state.transaksi.slice(0,3);
+  document.getElementById('recentTrxList').innerHTML = recent.length
+    ? recent.map(t => trxHTML(t)).join('')
+    : '<div class="empty"><div class="empty-icon">📭</div>Belum ada transaksi</div>';
+  // Reminders on dashboard
+  renderRemindersDash();
+}
+
+// =============================================
+// BUDGET KATEGORI
+// =============================================
+function buildBudgetForm() {
+  document.getElementById('budgetFormList').innerHTML = CATEGORIES_EXPENSE.map(cat => `
+    <div class="form-group">
+      <label>${cat}</label>
+      <input type="number" placeholder="0 = tidak dibatasi" min="0"
+        value="${state.budgetKategori[cat]||''}"
+        id="bcat_${cat.replace(/[^a-zA-Z]/g,'_')}">
+    </div>
+  `).join('');
+}
+function simpanBudget() {
+  CATEGORIES_EXPENSE.forEach(cat => {
+    const el = document.getElementById('bcat_'+cat.replace(/[^a-zA-Z]/g,'_'));
+    if (el) {
+      const v = parseFloat(el.value);
+      if (v > 0) state.budgetKategori[cat] = v;
+      else delete state.budgetKategori[cat];
+    }
+  });
+  saveState();
+  closeModal('budgetModal');
+  showToast('✅ Budget kategori disimpan!');
+}
+
+// =============================================
+// LAPORAN
+// =============================================
+function renderLaporan() {
+  renderCategoryChart();
+  renderWeeklyChart();
+}
+function renderCategoryChart() {
+  const monthTrx = getThisMonthTrx().filter(t=>t.type==='pengeluaran');
+  const catMap = {};
+  monthTrx.forEach(t => {
+    catMap[t.kategori] = (catMap[t.kategori]||0) + t.nominal;
+  });
+  const sorted = Object.entries(catMap).sort((a,b)=>b[1]-a[1]);
+  const total = sorted.reduce((s,x)=>s+x[1],0);
+  const el = document.getElementById('categoryChart');
+  if (!sorted.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📊</div>Belum ada data bulan ini</div>'; return; }
+  el.innerHTML = sorted.map(([cat,amt]) => {
+    const pct = total > 0 ? Math.round((amt/total)*100) : 0;
+    const color = CAT_COLORS[cat] || '#6366f1';
+    return `<div class="budget-item">
+      <div class="budget-row">
+        <span class="budget-name">${cat}</span>
+        <span class="budget-info">${rp(amt)} (${pct}%)</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width:${pct}%;background:${color}"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function renderWeeklyChart() {
+  const days = [];
+  for (let i=6; i>=0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    const key = d.toISOString().split('T')[0];
+    const label = d.toLocaleDateString('id-ID',{weekday:'short'});
+    const out = state.transaksi.filter(t=>t.tanggal===key&&t.type==='pengeluaran').reduce((s,t)=>s+t.nominal,0);
+    const inc = state.transaksi.filter(t=>t.tanggal===key&&t.type==='pemasukan').reduce((s,t)=>s+t.nominal,0);
+    days.push({label, out, inc});
+  }
+  const maxVal = Math.max(...days.map(d=>Math.max(d.out,d.inc)),1);
+  document.getElementById('weeklyChart').innerHTML = days.map(d => {
+    const hOut = Math.round((d.out/maxVal)*100);
+    const hInc = Math.round((d.inc/maxVal)*100);
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end">
+      <div style="display:flex;gap:2px;align-items:flex-end;width:100%;height:100%;justify-content:center">
+        <div style="width:45%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,#818cf8,#4f46e5);height:${hOut}%;min-height:${d.out?4:0}px;transition:height .5s"></div>
+        <div style="width:45%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,#4ade80,#16a34a);height:${hInc}%;min-height:${d.inc?4:0}px;transition:height .5s"></div>
+      </div>
+      <span class="bar-label">${d.label}</span>
+    </div>`;
+  }).join('');
+}
+
+// =============================================
+// GOALS
+// =============================================
+function simpanGoal() {
+  const nama = document.getElementById('goalNama').value.trim();
+  const target = parseFloat(document.getElementById('goalTarget').value)||0;
+  const terkumpul = parseFloat(document.getElementById('goalTerkumpul').value)||0;
+  if (!nama || target <= 0) { showToast('⚠️ Lengkapi data target'); return; }
+  state.goals.push({ id: Date.now(), nama, target, terkumpul });
+  saveState();
+  closeModal('goalModal');
+  document.getElementById('goalNama').value='';
+  document.getElementById('goalTarget').value='';
+  document.getElementById('goalTerkumpul').value='';
+  showToast('🎯 Target tabungan ditambahkan!');
+  renderGoals();
+}
+function renderGoals() {
+  const el = document.getElementById('goalsList');
+  if (!state.goals.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">🏦</div>Belum ada target tabungan</div>';
+    return;
+  }
+  el.innerHTML = state.goals.map(g => {
+    const pct = Math.min(Math.round((g.terkumpul/g.target)*100),100);
+    const cls = pct>=100?'ok':pct>=60?'warn':'over';
+    return `<div class="goal-card">
+      <div class="goal-header">
+        <div>
+          <div class="goal-name">🎯 ${g.nama}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="goal-pct">${pct}%</div>
+          <button onclick="hapusGoal(${g.id})" style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:16px">🗑️</button>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill ${cls}" style="width:${pct}%"></div>
+      </div>
+      <div class="goal-amounts">
+        <span>Terkumpul: ${rp(g.terkumpul)}</span>
+        <span>Target: ${rp(g.target)}</span>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <input type="number" placeholder="Tambah tabungan..." min="0" style="flex:1;padding:8px 12px;font-size:13px" id="addSave_${g.id}">
+        <button class="btn btn-success" style="width:auto;padding:8px 14px;font-size:13px" onclick="tambahTabungan(${g.id})">+ Tambah</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function hapusGoal(id) {
+  state.goals = state.goals.filter(g=>g.id!==id);
+  saveState(); renderGoals(); showToast('🗑️ Target dihapus');
+}
+function tambahTabungan(id) {
+  const input = document.getElementById('addSave_'+id);
+  const amt = parseFloat(input.value)||0;
+  if (amt <= 0) { showToast('⚠️ Masukkan jumlah'); return; }
+  const goal = state.goals.find(g=>g.id===id);
+  if (goal) { goal.terkumpul += amt; }
+  saveState(); renderGoals(); showToast('💰 Tabungan diperbarui!');
+}
+
+// =============================================
+// REMINDERS
+// =============================================
+function simpanReminder() {
+  const nama = document.getElementById('remNama').value.trim();
+  const nominal = parseFloat(document.getElementById('remNominal').value)||0;
+  const tanggal = document.getElementById('remTanggal').value;
+  if (!nama || !tanggal) { showToast('⚠️ Lengkapi data tagihan'); return; }
+  state.reminders.push({ id: Date.now(), nama, nominal, tanggal });
+  saveState();
+  closeModal('reminderModal');
+  document.getElementById('remNama').value='';
+  document.getElementById('remNominal').value='';
+  showToast('🔔 Reminder ditambahkan!');
+  renderReminders(); renderRemindersDash();
+}
+function getDaysDiff(tanggal) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const due = new Date(tanggal); due.setHours(0,0,0,0);
+  return Math.round((due-today)/(1000*60*60*24));
+}
+function reminderHTML(r, showDelete=false) {
+  const diff = getDaysDiff(r.tanggal);
+  const cls = diff < 0 ? 'urgent' : diff <= 3 ? 'soon' : 'ok';
+  const label = diff < 0 ? `Terlambat ${Math.abs(diff)} hari` : diff === 0 ? 'Hari ini!' : `${diff} hari lagi`;
+  return `<div class="reminder-item">
+    <div class="reminder-dot ${cls}"></div>
+    <div class="reminder-info">
+      <div class="reminder-name">${r.nama}</div>
+      <div class="reminder-due">📅 ${r.tanggal} · ${label}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="reminder-amt">${r.nominal>0?rp(r.nominal):''}</div>
+      ${showDelete?`<button onclick="hapusReminder(${r.id})" style="background:none;border:none;cursor:pointer;color:var(--danger);font-size:16px">🗑️</button>`:''}
+    </div>
+  </div>`;
+}
+function renderReminders() {
+  const el = document.getElementById('reminderListFull');
+  if (!state.reminders.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">🔕</div>Belum ada tagihan</div>';
+    return;
+  }
+  const sorted = [...state.reminders].sort((a,b)=>new Date(a.tanggal)-new Date(b.tanggal));
+  el.innerHTML = sorted.map(r=>reminderHTML(r,true)).join('');
+}
+function renderRemindersDash() {
+  const el = document.getElementById('reminderList');
+  const upcoming = [...state.reminders]
+    .sort((a,b)=>new Date(a.tanggal)-new Date(b.tanggal))
+    .slice(0,3);
+  if (!upcoming.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">🔕</div>Belum ada tagihan<br><small>Tambah di menu Reminder</small></div>';
+    return;
+  }
+  el.innerHTML = upcoming.map(r=>reminderHTML(r)).join('');
+}
+function hapusReminder(id) {
+  state.reminders = state.reminders.filter(r=>r.id!==id);
+  saveState(); renderReminders(); renderRemindersDash(); showToast('🗑️ Reminder dihapus');
+}
+
+// =============================================
+// TIPS
+// =============================================
+function updateTips() {
+  const monthTrx = getThisMonthTrx().filter(t=>t.type==='pengeluaran');
+  const tips = [];
+  // Analyze spending
+  const catMap = {};
+  monthTrx.forEach(t => { catMap[t.kategori]=(catMap[t.kategori]||0)+t.nominal; });
+  const topCat = Object.entries(catMap).sort((a,b)=>b[1]-a[1])[0];
+  const totalOut = monthTrx.reduce((s,t)=>s+t.nominal,0);
+  const pct = state.budgetBulanan>0 ? (totalOut/state.budgetBulanan)*100 : 0;
+  if (pct >= 90) tips.push(`<strong>⚠️ Anggaran hampir habis!</strong> Kamu sudah memakai ${Math.round(pct)}% dari budget bulan ini. Kurangi pengeluaran tidak penting.`);
+  else if (pct >= 70) tips.push(`<strong>📊 Budget 70% terpakai.</strong> Kamu masih punya ${rp(state.budgetBulanan - totalOut)} tersisa. Jaga pengeluaran hingga akhir bulan!`);
+  if (topCat && topCat[1] > 0) tips.push(`<strong>💡 Pengeluaran terbesar:</strong> ${topCat[0]} sebesar ${rp(topCat[1])} bulan ini. Coba evaluasi apakah bisa dikurangi.`);
+  const kopiTrx = catMap['☕ Kopi'] || 0;
+  if (kopiTrx > 100000) tips.push(`<strong>☕ Kopi alert!</strong> Kamu menghabiskan ${rp(kopiTrx)} untuk kopi bulan ini. Coba buat kopi sendiri untuk hemat lebih!`);
+  if (state.goals.length) {
+    const g = state.goals[0];
+    const sisa = g.target - g.terkumpul;
+    if (sisa > 0) tips.push(`<strong>🎯 Target: ${g.nama}</strong> — masih butuh ${rp(sisa)} lagi. Sisihkan sebagian uang saku setiap minggu!`);
+  }
+  if (!tips.length) tips.push(`<strong>👋 Semangat!</strong> Catat setiap transaksi untuk mendapatkan analisis keuangan yang lebih akurat.`);
+  document.getElementById('tipText').innerHTML = tips[Math.floor(Math.random()*tips.length)];
+}
+
+// =============================================
+// SETTINGS & RESET
+// =============================================
+function updateBudget() {
+  const v = parseFloat(document.getElementById('settingBudget').value)||0;
+  state.budgetBulanan = v;
+  saveState(); closeModal('resetModal'); showToast('✅ Budget diperbarui!'); init();
+}
+function resetData() {
+  if (!confirm('Yakin ingin menghapus semua data Monbell?')) return;
+  localStorage.removeItem('monbell_v2');
+  location.reload();
+}
+
+// =============================================
+// EXPORT CSV
+// =============================================
+function exportCSV() {
+  if (!state.transaksi.length) { showToast('⚠️ Belum ada data untuk diekspor'); return; }
+  const header = 'Tanggal,Tipe,Kategori,Nominal,Catatan\n';
+  const rows = state.transaksi.map(t =>
+    `${t.tanggal},${t.type},${t.kategori},${t.nominal},"${t.catatan||''}"`
+  ).join('\n');
+  const blob = new Blob([header+rows], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'monbell_transaksi.csv'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('📥 Data berhasil diekspor!');
+}
+
+// =============================================
+// OFFLINE DETECTION
+// =============================================
+function updateOnlineStatus() {
+  document.getElementById('offlineBadge').style.display = navigator.onLine ? 'none' : 'inline-block';
+}
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+
+// =============================================
+// SERVICE WORKER REGISTRATION (tidak diubah)
+// =============================================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(() => console.log('✅ Service Worker registered'))
+      .catch(err => console.error('❌ Service Worker error:', err));
+  });
+}
+
+// =============================================
+// START
+// =============================================
+loadState();
+if (!state.onboarded) {
+  document.getElementById('onboardOverlay').style.display = 'flex';
+} else {
+  document.getElementById('onboardOverlay').style.display = 'none';
+  init();
+}
+</script>
+</body>
+</html>
