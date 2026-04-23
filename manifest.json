@@ -1,13 +1,13 @@
 {
   "id": "./",
-  "name": "PWA Template Responsif",
-  "short_name": "PWA Demo",
-  "description": "Aplikasi PWA responsif untuk demonstrasi template dasar Progressive Web App dengan dukungan offline dan installable.",
+  "name": "MonBellcat",
+  "short_name": "MonBell",
+  "description": "aplikasi monbell adalah aplikai pencatat keuangan khusus mahasiswa",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#4F46E5",
-  "theme_color": "#4F46E5",
+  "background_color": "#121212",
+  "theme_color": "#FF9AA2",
   "orientation": "portrait",
   "lang": "id",
   "icons": [
